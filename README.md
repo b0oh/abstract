@@ -29,7 +29,7 @@ Natural number detected: 6
 Run _Scheme.hs_ module
 
 ```
-$ stack exec scheme samples/scheme0.scm
+$ stack exec scheme samples/scheme1.scm
 λ > 1 +1 → +1 1 (succ zero → succ zero) (num succ zero → succ (num succ zero))
 α > $2 $3 → $3 $2 ($7 $8 → $7 $8) ($12 $13 $14 → $13 ($12 $13 $14))
 β > $3 → $3 ($7 $8 → $7 $8) ($12 $13 $14 → $13 ($12 $13 $14))
@@ -38,4 +38,11 @@ $ stack exec scheme samples/scheme0.scm
 β > $13 $14 → $13 (($8 → $13 $8) $14)
 β > $13 $14 → $13 ($13 $14)
 Natural number detected: 2
+```
+
+Run `ghci`
+
+```
+$ stack ghci --main-is abstract:exe:scheme
+> run_file "samples/scheme1.scm"
 ```
