@@ -4,7 +4,7 @@ import Prelude hiding (read)
 import qualified Data.Char as Char
 
 
-operator_chars = "+-*/"
+operator_chars = "+*^"
 
 
 is_operator = (`elem` operator_chars)

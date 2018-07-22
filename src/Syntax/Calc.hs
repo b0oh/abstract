@@ -30,6 +30,18 @@ plus =
               (Var "zero"))))))
 
 
+mult =
+  Abs "num1"
+    (Abs "num2"
+      (Abs "succ"
+        (Abs "zero"
+          (App
+            (App
+              (Var "num1")
+              (App (Var "num2") (Var "succ")))
+            (Var "zero")))))
+
+
 extract_nat :: Integer -> Term
 extract_nat n =
   case n of
@@ -51,6 +63,8 @@ extract sexp =
           succ
         "+" ->
           plus
+        "*" ->
+          mult
         nat ->
           extract_nat (Prelude.read nat)
     List [op, num] ->
