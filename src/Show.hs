@@ -36,6 +36,8 @@ show_term term =
 
       App left right ->
         case () of
+          _ | is_app left ->
+            "(" ++ show_term left ++ ") " ++ show_term right
           _ | is_app right ->
             show_term left ++ " (" ++ show_term right ++ ")"
           -- _ | is_var right ->

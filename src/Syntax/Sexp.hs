@@ -14,9 +14,9 @@ is_white char = char `elem` " \n\t"
 
 
 is_symbol char =
-  Char.isDigit char
+  char `elem` "_-'?"
+  || Char.isDigit char
   || Char.isLetter char
-  || char == '_'
   || is_operator char
 
 
