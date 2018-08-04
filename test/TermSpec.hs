@@ -91,6 +91,34 @@ spec = do
       alpha_ (Abs "x" (Var "x")) `shouldBe` (Abs "x" (Var "x"))
       alpha_ (Abs "x" (Abs "x" (Var "x"))) `shouldBe` (Abs "x" (Abs "x$1" (Var "x$1")))
 
+  describe "reduce" $ do
+    it "zxcv" $ do
+      let zero = Abs "succ" (Abs "zero" (Var "zero"))
+      let inc = Abs "num" (Abs "succ" (Abs "zero" (App (Var "succ") (App (App (Var "num") (Var "succ")) (Var "zero")))))
+      pass (pass (App inc zero)) `shouldBe` (Abs "succ" (Abs "zero" (App (Var "succ") (Var "zero"))))
+
+    it "poipo" $ do
+      let term = read_extract "((lambda (0)\
+                              \   ((lambda (+1)\
+                              \      ((lambda (1)\
+                              \         (+1 1))\
+                              \       (+1 0)))\
+                              \    (lambda (num succ zero) (succ (num succ zero)))))\
+                              \ (lambda (succ zero) zero))"
+
+      pass (pass (pass (pass (pass (pass term))))) `shouldBe` Abs "succ" (Abs "zero" (App (Var "succ") (App (Var "succ") (Var "zero"))))
+
+    it "fkn hell" $ do
+      contents <- readFile "samples/2-nested-let.scm"
+      let term = read_extract contents
+      term `shouldBe` Var "q"
+
+      -- (x ((x -> x) y))
+      -- (x -> (y -> x y) (x -> x))
+      -- (x -> (x -> x) (y -> x y))
+
+
+
 
     -- it "substitues bound variables according to their scope" $ do
     --   let term = read_extract "((lambda (x) ((lambda (x) x) x)) y)"

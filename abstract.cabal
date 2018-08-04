@@ -12,32 +12,14 @@ extra-source-files:  README.md
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Optional, Show, Syntax.Calc, Syntax.Scheme, Syntax.Sexp, Term
+  exposed-modules:     Optional, Show, Syntax.Scheme, Syntax.Sexp, Term
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
 
-
-executable calc
-  hs-source-dirs:      src
-  main-is:             Calc.hs
+executable abstract
+  hs-source-dirs:      app
+  main-is:             Main.hs
   default-language:    Haskell2010
-  other-modules:       Optional
-                     , Show
-                     , Syntax.Calc
-                     , Syntax.Sexp
-                     , Term
-  build-depends:       base >= 4.7 && < 5, abstract
-
-
-executable scheme
-  hs-source-dirs:      src
-  main-is:             Scheme.hs
-  default-language:    Haskell2010
-  other-modules:       Optional
-                     , Show
-                     , Syntax.Scheme
-                     , Syntax.Sexp
-                     , Term
   build-depends:       base >= 4.7 && < 5, abstract
 
 test-suite abstract-test

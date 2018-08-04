@@ -26,9 +26,7 @@ run_file file_name = do
   let sexp = read_ contents
   let term = extract sexp
   putStrLn ("λ > " ++ show_term term)
-  let term' = alpha term
-  putStrLn ("α > " ++ show_term term')
-  let reduced : steps = reduce term'
+  let reduced : steps = reduce term
   print_steps steps
   case decode_nat reduced of
     Some num ->

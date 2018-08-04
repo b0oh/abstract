@@ -2,12 +2,14 @@ module Syntax.Scheme where
 
 import Prelude hiding (read, succ)
 import qualified Prelude (read)
+import Debug.Trace
 
 import Term
 import Syntax.Sexp
 
 
 extract :: Sexp -> Term
+extract sexp | trace ("extract " ++ show sexp) False = undefined
 extract sexp =
   let
     app_iter terms acc =
@@ -70,11 +72,11 @@ extract sexp =
         in
           let_iter values let_body
 
-      -- List [(Symbol "let*"), List assignments, body] ->
-      --   let
-      --     new_sexp = let_star_to_let assignments body
-      --   in
-      --     extract new_sexp
+      List [(Symbol "let*"), List assignments, body] ->
+        let
+          new_sexp = let_star_to_let assignments body
+        in
+          extract new_sexp
 
       List (abs : term : rest) ->
         app_iter rest (App (extract abs) (extract term))
