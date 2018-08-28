@@ -27,7 +27,7 @@ run_file file_name = do
   let term = extract sexp
   putStrLn ("λ > " ++ show_term term)
   let reduced : steps = reduce term
-  print_steps steps
+--  print_steps steps
   case decode_nat reduced of
     Some num ->
       putStrLn ("Natural number detected: " ++ show num)

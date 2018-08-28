@@ -9,7 +9,7 @@ import Syntax.Sexp
 
 
 extract :: Sexp -> Term
-extract sexp | trace ("extract " ++ show sexp) False = undefined
+-- extract sexp | trace ("extract " ++ show sexp) False = undefined
 extract sexp =
   let
     app_iter terms acc =

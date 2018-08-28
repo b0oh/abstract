@@ -1,6 +1,8 @@
 module Term where
 
 import Debug.Trace
+import Data.IORef (newIORef, readIORef, modifyIORef)
+import System.IO.Unsafe (unsafePerformIO)
 
 import Optional
 
@@ -68,7 +70,7 @@ call_by_name_once term =
     App left right ->
       case call_by_name_once left of
         Abs id body ->
-          subst id right body
+          substq id right body
         left' ->
           App left' right
 
@@ -79,22 +81,32 @@ normal_order_once term =
   case term of
     Var _ ->
       term
+
     Abs id body ->
       Abs id (normal_order_once body)
+
     App left right ->
       case call_by_name_once left of
         Abs id body ->
-          subst id right body
+          substq id right body
+
         left' ->
-          let
-            left'' = normal_order_once left'
-          in
-            App left'' (normal_order_once right)
+          App (normal_order_once left') (normal_order_once right)
+
+
+eta :: Term -> Term
+eta term =
+  case term of
+    Abs x (App qwe (Var y)) | x == y ->
+      qwe
+    _ ->
+      term
 
 
 pass :: Term -> Term
 pass term =
-  normal_order_once (alpha term)
+  normal_order_once term
+--  eta (normal_order_once ()
 
 
 reduce :: Term -> [Term]
@@ -126,3 +138,88 @@ decode_nat value =
           None
     _ ->
       None
+
+
+is_free :: Id -> Term -> Bool
+is_free name term =
+  case term of
+    Var id ->
+      name == id
+
+    Abs id body ->
+      name /= id && is_free name body
+
+    App left right ->
+      is_free name left || is_free name right
+
+
+ref = unsafePerformIO (newIORef 0)
+
+new :: Id -> Id
+new name =
+  unsafePerformIO $ do
+    modifyIORef ref (+1)
+    c <- readIORef ref
+    return (name <> show c)
+
+
+substq :: Id -> Term -> Term -> Term
+substq name new_term term =
+  case term of
+    Var id | id == name ->
+      new_term
+
+    Var _ ->
+      term
+
+    Abs id body | id == name ->
+      term
+
+    Abs id body | is_free id new_term && is_free name body ->
+      let
+        id' = new id
+        body' = substq id (Var id') body
+      in
+        Abs id' (substq name new_term body')
+
+    Abs id body ->
+      Abs id (substq name new_term body)
+
+    App left right ->
+      App (substq name new_term left) (substq name new_term right)
+
+
+cbn :: Term -> Term
+cbn term =
+  case term of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id body
+
+    App left right ->
+      case cbn left of
+        Abs id body ->
+          cbn (substq id right body)
+
+        left' ->
+          App left' right
+
+
+nor :: Term -> Term
+nor term =
+  case term of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id (nor body)
+
+    App left right ->
+      case cbn left of
+        Abs id body ->
+          nor (substq id right body)
+
+        left' ->
+          App (nor left') (nor right)
