@@ -9,26 +9,15 @@ import Syntax.Sexp
 import Syntax.Scheme
 
 
-print_steps :: [Term] -> IO ()
-print_steps steps =
-  case steps of
-    [] ->
-      pure ()
-    term : rest ->
-      do
-        print_steps rest
-        putStrLn ("β > " ++ show_term term)
-
-
 run_file :: String -> IO ()
 run_file file_name = do
   contents <- readFile file_name
   let sexp = read_ contents
   let term = extract sexp
   putStrLn ("λ > " ++ show_term term)
-  let reduced : steps = reduce term
---  print_steps steps
-  case decode_nat reduced of
+  let normal_form = normal_order term
+  putStrLn ("λ > " ++ show_term normal_form)
+  case decode_nat normal_form of
     Some num ->
       putStrLn ("Natural number detected: " ++ show num)
     None ->

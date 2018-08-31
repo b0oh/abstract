@@ -28,6 +28,6 @@
        (fac (fix (lambda (fac num)
                    (if (eq? num 0)
                        1
-                       (* num (fac (- num 1)))))))
+                       (* num (fac (- num 1))))))))
 
-  (fac (+ 1 4)))
+  (fac 4))
