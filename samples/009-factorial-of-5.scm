@@ -1,7 +1,9 @@
 (let* ((true (lambda (true false) true))
        (false (lambda (true false) false))
+       (and (lambda (pred1 pred2) (pred1 pred2 pred1)))
+       (if (lambda (pred true-clause false-clause) (pred true-clause false-clause)))
 
-       (fix (lambda (f) ((lambda (x) (f (x x))) (lambda (x) (f (x x))))))
+       (fix (lambda (g) ((lambda (x) (g (x x))) (lambda (x) (g (x x))))))
 
        (pair (lambda (first second pair) (pair first second)))
        (first (lambda (pair) (pair true)))
@@ -22,16 +24,10 @@
        (1 (inc 0))
        (2 (+ 1 1))
        (4 (* 2 2))
-       (16 (* 4 4))
 
-       (almost-factorial
-        (lambda (fac)
-          (lambda (num)
-            (if (eq? num 0)
-                1
-                (* num (fac (- n 1)))))))
+       (fac (fix (lambda (fac num)
+                   (if (eq? num 0)
+                       1
+                       (* num (fac (- num 1))))))))
 
-
-       (fac (fix almost-factorial)))
-
-  (fac 1))
+  (fac (+ 4 1)))

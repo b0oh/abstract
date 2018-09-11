@@ -23,11 +23,10 @@
 
        (1 (inc 0))
        (2 (+ 1 1))
-       (4 (* 2 2))
 
        (fac (fix (lambda (fac num)
                    (if (eq? num 0)
                        1
                        (* num (fac (- num 1))))))))
 
-  (fac 4))
+  (fac (+ 1 2)))

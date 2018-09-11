@@ -1,0 +1,159 @@
+module Term where
+
+import Debug.Trace
+
+import Optional
+
+type Id = String
+
+data Term =
+  Var Id |
+  Abs Id Term |
+  App Term Term deriving (Show, Eq)
+
+
+data Reduction = Alpha Term | Beta Term
+
+
+data Reducer =
+  Reducer {
+    reducer_term :: Term,
+    reducer_reductions :: [Reduction],
+    reducer_limit :: Int
+  }
+
+
+fold_term var_folder abs_folder app_folder term =
+  case term of
+    Var id ->
+      var_folder id
+
+    Abs id body ->
+      abs_folder id body
+
+    App left right ->
+      app_folder left right
+
+
+make_reducer term = Reducer term [] 30000
+
+
+reduction :: Term -> Reduction -> Reducer -> Reducer
+reduction term reduction reducer =
+  let
+    reductions = [reduction | reducer_reductions reducer]
+    new_limit = (reducer_limit reducer) - 1
+  in
+    reducer {
+      reducer_term = term,
+      reducer_reductions = reductions,
+      reducer_limit = new_limit
+    }
+
+
+alpha :: Term -> Reducer -> Reducer
+alpha term reducer =
+  reduction term (Alpha term) reducer
+
+
+beta :: Term -> Reducer -> Reducer
+beta term reducer =
+  reduction term (Beta term) reducer
+
+
+is_free :: Id -> Term -> Bool
+is_free name term =
+  let
+    var id =
+      name == id
+
+    abs id body =
+      name /= id && is_free name body
+
+    app left right =
+      is_free name left || is_free name right
+
+  in
+    fold_term var abs app term
+
+
+new_id :: Id -> Reducer -> Id
+new_id name reducer =
+  name <> show (length (reducer_reductions reducer))
+
+
+subst :: Id -> Term -> Reducer -> Reducer
+subst name new_term reducer =
+  case term of
+    Var id | id == name ->
+      new_term -- beta
+
+    Var _ ->
+      term
+
+    Abs id body | id == name ->
+      term
+
+    Abs id body | is_free id new_term && is_free name body ->
+      let
+        id' = new_id id reducer
+        body' = subst id (Var id') body
+      in
+        alpha Abs id' (subst name new_term reducer { reducer_term = body' }) -- alpha
+
+    Abs id body ->
+      Abs id (subst name new_term body)
+
+    App left right ->
+      App (subst name new_term left) (subst name new_term right)
+
+
+call_by_name :: Reducer -> Reducer
+call_by_name reducer =
+  case reducer_term reducer of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id body
+
+    App left right ->
+      case call_by_name left of
+        Abs id body ->
+          call_by_name (subst id right body)
+
+        left' ->
+          App left' right
+
+
+normal_order :: Reducer -> Reducer
+normal_order reducer =
+  case reducer_term term of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id (normal_order body)
+
+    App left right ->
+      case call_by_name left of
+        Abs id body ->
+          normal_order (subst id right body)
+
+        left' ->
+          App (normal_order left') (normal_order right)
+
+
+decode_nat :: Term -> Optional Integer
+decode_nat value =
+  case value of
+    Abs succ (Abs zero1 (Var zero2)) | succ /= zero1 && zero1 == zero2 ->
+      Some 0
+    Abs succ1 (Abs zero (App (Var succ2) body)) | succ1 == succ2 ->
+      case decode_nat (Abs succ1 (Abs zero body)) of
+        Some nat ->
+          Some (nat + 1)
+        None ->
+          None
+    _ ->
+      None

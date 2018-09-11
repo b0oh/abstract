@@ -1,0 +1,164 @@
+module Term where
+
+import Debug.Trace
+import Data.IORef (newIORef, readIORef, modifyIORef)
+import System.IO.Unsafe (unsafePerformIO)
+
+import Optional
+
+type Id = String
+
+data Term =
+  Var Id |
+  Abs Id Term |
+  App Term Term deriving (Show, Eq)
+
+
+is_free :: Id -> Term -> Bool
+is_free name term =
+  case term of
+    Var id ->
+      name == id
+
+    Abs id body ->
+      name /= id && is_free name body
+
+    App left right ->
+      is_free name left || is_free name right
+
+
+id_ref = unsafePerformIO (newIORef 0)
+
+new_id :: Id -> Id
+new_id name =
+  unsafePerformIO $ do
+    modifyIORef id_ref (+1)
+    c <- readIORef id_ref
+    return (name <> show c)
+
+
+subst :: Id -> Term -> Term -> Term
+subst name new_term term =
+  case term of
+    Var id | id == name ->
+      new_term
+
+    Var _ ->
+      term
+
+    Abs id body | id == name ->
+      term
+
+    Abs id body | is_free id new_term && is_free name body ->
+      let
+        id' = new_id id
+        body' = subst id (Var id') body
+      in
+        Abs id' (subst name new_term body')
+
+    Abs id body ->
+      Abs id (subst name new_term body)
+
+    App left right ->
+      App (subst name new_term left) (subst name new_term right)
+
+
+call_by_name_once :: Term -> Term
+call_by_name_once term =
+  case term of
+    Var _ ->
+      term
+    Abs id body ->
+      term
+    App left right ->
+      case call_by_name_once left of
+        Abs id body ->
+          subst id right body
+        left' ->
+          App left' right
+
+
+normal_order_once :: Term -> Term
+normal_order_once term =
+  case term of
+    Var _ ->
+      term
+
+    Abs id body ->
+      Abs id (normal_order_once body)
+
+    App left right ->
+      case call_by_name_once left of
+        Abs id body ->
+          subst id right body
+
+        left' ->
+          App (normal_order_once left') (normal_order_once right)
+
+
+reduce :: Term -> [Term]
+reduce term =
+  let
+    iter term acc =
+      let
+        term' = normal_order_once term
+      in
+        if term' == term then
+          term : acc
+        else
+          iter term' (term' : acc)
+
+  in
+    iter term []
+
+
+call_by_name :: Term -> Term
+call_by_name term =
+  case term of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id body
+
+    App left right ->
+      case call_by_name left of
+        Abs id body ->
+          call_by_name (subst id right body)
+
+        left' ->
+          App left' right
+
+
+normal_order :: Term -> Term
+normal_order term =
+  case term of
+    Var id ->
+      Var id
+
+    Abs id body ->
+      Abs id (normal_order body)
+
+    App left right ->
+      case call_by_name left of
+        Abs id body ->
+          normal_order (subst id right body)
+
+        left' ->
+          App (normal_order left') (normal_order right)
+
+
+
+decode_nat :: Term -> Optional Integer
+decode_nat value =
+  case value of
+    Abs succ (Abs zero1 (Var zero2)) | succ /= zero1 && zero1 == zero2 ->
+      Some 0
+    Abs succ1 (Abs zero (App (Var succ2) body)) | succ1 == succ2 ->
+      case decode_nat (Abs succ1 (Abs zero body)) of
+        Some nat ->
+          Some (nat + 1)
+        None ->
+          None
+    _ ->
+      None
