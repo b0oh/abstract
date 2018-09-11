@@ -1,6 +1,5 @@
 module Term where
 
-import Debug.Trace
 import Data.Char (isDigit)
 import Data.List (union, dropWhileEnd)
 
@@ -12,6 +11,20 @@ data Term =
   Var Id |
   Abs Id Term |
   App Term Term deriving (Show, Eq)
+
+
+
+is_free :: Id -> Term -> Bool
+is_free name term =
+  case term of
+    Var id ->
+      name == id
+
+    Abs id body ->
+      name /= id && is_free name body
+
+    App abs arg ->
+      is_free name abs || is_free name arg
 
 
 free_vars :: Term -> [Id]
@@ -46,7 +59,6 @@ make_new_id name names =
 
 
 alpha :: Id -> Id -> Term -> Term
-alpha _ _ _ | trace ("\nALPHA\n ") False = undefined
 alpha name new_name term =
   case term of
     Var id | id == name ->
@@ -82,19 +94,6 @@ simple_beta name new_term term =
 
     App abs arg ->
       App (simple_beta name new_term abs) (simple_beta name new_term arg)
-
-
-is_free :: Id -> Term -> Bool
-is_free name term =
-  case term of
-    Var id ->
-      name == id
-
-    Abs id body ->
-      name /= id && is_free name body
-
-    App abs arg ->
-      is_free name abs || is_free name arg
 
 
 beta :: Id -> Term -> Term -> Term
@@ -164,22 +163,6 @@ is_normal term =
 
     App abs arg ->
       is_normal abs && is_normal arg
-
-
-is_whnf :: Term -> Bool
-is_whnf term =
-  case term of
-    App (Abs _ _) arg ->
-      False
-
-    Abs x0 (App _ (Var x1)) | x0 == x1 ->
-      False
-
-    App abs _ ->
-      is_whnf abs
-
-    _otherwise ->
-      True
 
 
 full_beta :: Term -> Term
