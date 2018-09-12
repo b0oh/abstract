@@ -15,7 +15,7 @@ run_file file_name = do
   let sexp = read_ contents
   let term = extract sexp
   putStrLn ("λ > " ++ show_term term)
-  let normal_form = normal_order term
+  let normal_form = full_beta term
   putStrLn ("λ > " ++ show_term normal_form)
   case decode_nat normal_form of
     Some num ->

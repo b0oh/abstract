@@ -125,24 +125,20 @@ beta name new_term term =
       App (beta name new_term abs) (beta name new_term arg)
 
 
-reduce1 :: Term -> Term
-reduce1 term =
+reduce_once :: Term -> Term
+reduce_once term =
   case term of
     Var _ ->
       term
 
-    -- eta
-    Abs x0 (App term' (Var x1)) | x0 == x1 ->
-      term'
-
     Abs id body ->
-      Abs id (reduce1 body)
+      Abs id (reduce_once body)
 
     App (Abs id body) arg ->
-      beta id arg body
+      simple_beta id arg body
 
     App abs arg ->
-      App (reduce1 abs) (reduce1 arg)
+      App (reduce_once abs) (reduce_once arg)
 
 
 is_normal :: Term -> Bool
@@ -150,10 +146,6 @@ is_normal term =
   case term of
     Var _ ->
       True
-
-    -- eta
-    Abs x0 (App _ (Var x1)) | x0 == x1 ->
-      False
 
     Abs _ body ->
       is_normal body
@@ -168,7 +160,7 @@ is_normal term =
 full_beta :: Term -> Term
 full_beta term =
   let
-    term' = reduce1 term
+    term' = reduce_once term
 
   in
     if is_normal term' then
@@ -180,8 +172,8 @@ full_beta term =
 call_by_name :: Term -> Term
 call_by_name term =
   case term of
-    Var id ->
-      Var id
+    Var _ ->
+      term
 
     Abs id body ->
       Abs id body
@@ -198,8 +190,8 @@ call_by_name term =
 normal_order :: Term -> Term
 normal_order term =
   case term of
-    Var id ->
-      Var id
+    Var _ ->
+      term
 
     Abs id body ->
       Abs id (normal_order body)
