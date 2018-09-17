@@ -3,8 +3,6 @@ module Term where
 import Data.Char (isDigit)
 import Data.List (union, dropWhileEnd)
 
-import Optional
-
 type Id = String
 
 data Term =
@@ -203,18 +201,3 @@ normal_order term =
 
         abs' ->
           App (normal_order abs') (normal_order arg)
-
-
-decode_nat :: Term -> Optional Integer
-decode_nat value =
-  case value of
-    Abs succ (Abs zero1 (Var zero2)) | succ /= zero1 && zero1 == zero2 ->
-      Some 0
-    Abs succ1 (Abs zero (App (Var succ2) body)) | succ1 == succ2 ->
-      case decode_nat (Abs succ1 (Abs zero body)) of
-        Some nat ->
-          Some (nat + 1)
-        None ->
-          None
-    _ ->
-      None

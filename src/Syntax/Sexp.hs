@@ -46,8 +46,18 @@ read input@(char : rest)
     read rest
   | char == '(' =
     read_list rest []
+  | char == ';' =
+    skip_comment_line rest
   | is_symbol char =
     read_symbol rest [char]
+
+
+skip_comment_line :: String -> ReaderState
+skip_comment_line input =
+  let
+    skipped = dropWhile (/= '\n') input
+  in
+    read skipped
 
 
 read_symbol :: String -> String -> ReaderState

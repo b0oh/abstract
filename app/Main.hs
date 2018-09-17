@@ -4,6 +4,7 @@ import System.Environment
 
 import Optional
 import Term
+import Codec
 import Show
 import Syntax.Sexp
 import Syntax.Scheme
@@ -15,11 +16,11 @@ run_file file_name = do
   let sexp = read_ contents
   let term = extract sexp
   putStrLn ("λ > " ++ show_term term)
-  let normal_form = full_beta term
+  let normal_form = normal_order term
   putStrLn ("λ > " ++ show_term normal_form)
-  case decode_nat normal_form of
-    Some num ->
-      putStrLn ("Natural number detected: " ++ show num)
+  case decode normal_form of
+    Some result ->
+      putStrLn ("Term detected: " ++ show_decoded result)
     None ->
       return ()
 
