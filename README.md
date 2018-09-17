@@ -20,6 +20,6 @@ Term detected: #6
 Run `ghci`
 
 ```
-$ stack ghci --main-is abstract:exe:scheme
+$ stack ghci
 > run_file "examples/008-factorial.scm"
 ```
