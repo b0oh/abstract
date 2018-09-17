@@ -4,7 +4,7 @@ import Prelude hiding (read)
 import qualified Data.Char as Char
 
 
-operator_chars = "+-*/"
+operator_chars = "+*^/"
 
 
 is_operator = (`elem` operator_chars)
@@ -14,9 +14,9 @@ is_white char = char `elem` " \n\t"
 
 
 is_symbol char =
-  Char.isDigit char
+  char `elem` "_-'?"
+  || Char.isDigit char
   || Char.isLetter char
-  || char == '_'
   || is_operator char
 
 
@@ -46,8 +46,18 @@ read input@(char : rest)
     read rest
   | char == '(' =
     read_list rest []
+  | char == ';' =
+    skip_comment_line rest
   | is_symbol char =
     read_symbol rest [char]
+
+
+skip_comment_line :: String -> ReaderState
+skip_comment_line input =
+  let
+    skipped = dropWhile (/= '\n') input
+  in
+    read skipped
 
 
 read_symbol :: String -> String -> ReaderState

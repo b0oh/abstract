@@ -2,36 +2,60 @@ module Syntax.Scheme where
 
 import Prelude hiding (read, succ)
 import qualified Prelude (read)
+import Debug.Trace
 
 import Term
 import Syntax.Sexp
 
 
 extract :: Sexp -> Term
+-- extract sexp | trace ("extract " ++ show sexp) False = undefined
 extract sexp =
   let
-    app_chain terms acc =
+    app_iter terms acc =
       case terms of
         [] ->
           acc
 
         term : rest ->
-          app_chain rest (App acc (extract term))
+          app_iter rest (App acc (extract term))
 
-    lambda_chain ids acc =
-      case ids of
-        [] ->
-          acc
+    make_lambda args body =
+      let
+        (Symbol id) : rest = args
+        iter args acc =
+          case args of
+            [] ->
+              acc
 
-        (Symbol id) : rest ->
-          lambda_chain rest (Abs id acc)
+            (Symbol id) : rest ->
+              iter rest (Abs id acc)
+      in
+        iter rest (Abs id (extract body))
 
-    let_chain values acc =
+    get_let_assignments assignments =
+      let
+        folder (List [name, value]) (names, values) = (name : names, value : values)
+      in
+        foldr folder ([], []) assignments
+
+    let_iter values acc =
       case values of
         [] ->
           acc
         value : rest ->
-          let_chain rest (App acc (extract value))
+          let_iter rest (App acc (extract value))
+
+    let_star_to_let assignments body =
+      let
+        iter assignments acc =
+          case assignments of
+            [] ->
+              acc
+            List [name, value] : rest ->
+              List [(Symbol "let"), List [List [name, value]], iter rest acc]
+      in
+        iter assignments body
 
   in
     case sexp of
@@ -39,19 +63,20 @@ extract sexp =
         Var id
 
       List [(Symbol "lambda"), List args, body] ->
-        let
-          (Symbol id) : rest = reverse args
-        in
-          lambda_chain rest (Abs id (extract body))
+        make_lambda (reverse args) body
 
       List [(Symbol "let"), List assignments, body] ->
         let
-          folder (List [name, value]) (names, values) = (name : names, value : values)
-          (names, values) = foldr folder ([], []) assignments
-          (Symbol id) : rest = reverse names
-          let_body = lambda_chain rest (Abs id (extract body))
+          (names, values) = get_let_assignments assignments
+          let_body = make_lambda (reverse names) body
         in
-          let_chain values let_body
+          let_iter values let_body
+
+      List [(Symbol "let*"), List assignments, body] ->
+        let
+          new_sexp = let_star_to_let assignments body
+        in
+          extract new_sexp
 
       List (abs : term : rest) ->
-        app_chain rest (App (extract abs) (extract term))
+        app_iter rest (App (extract abs) (extract term))

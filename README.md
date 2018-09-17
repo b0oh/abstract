@@ -10,39 +10,16 @@ $ stack build
 
 ### Run
 
-Run _Calc.hs_ module
-
 ```
-$ stack exec calc samples/calc2.scm
-λ > num1 num2 succ zero → num1 succ (num2 succ zero) (num succ zero → succ (num succ zero) (succ zero → succ (succ zero))) (succ zero → succ (succ (succ zero)))
-α > $2 $3 $4 $5 → $2 $4 ($3 $4 $5) ($16 $17 $18 → $17 ($16 $17 $18) ($26 $27 → $26 ($26 $27))) ($33 $34 → $33 ($33 ($33 $34)))
-β > $3 $4 $5 → $16 $17 $18 → $17 ($16 $17 $18) ($26 $27 → $26 ($26 $27)) $4 ($3 $4 $5) ($33 $34 → $33 ($33 ($33 $34)))
-β > $4 $5 → $16 $17 $18 → $17 ($16 $17 $18) ($26 $27 → $26 ($26 $27)) $4 (($33 $34 → $33 ($33 ($33 $34))) $4 $5)
-β > $4 $5 → ($17 $18 → $17 (($26 $27 → $26 ($26 $27)) $17 $18)) $4 (($34 → $4 ($4 ($4 $34))) $5)
-β > $4 $5 → $18 → $4 (($26 $27 → $26 ($26 $27)) $4 $18) ($4 ($4 ($4 $5)))
-β > $4 $5 → $4 (($26 $27 → $26 ($26 $27)) $4 ($4 ($4 ($4 $5))))
-β > $4 $5 → $4 ($27 → $4 ($4 $27) ($4 ($4 ($4 $5))))
-β > $4 $5 → $4 ($4 ($4 ($4 ($4 ($4 $5)))))
-Natural number detected: 6
-```
-
-Run _Scheme.hs_ module
-
-```
-$ stack exec scheme samples/scheme1.scm
-λ > 1 +1 → +1 1 (succ zero → succ zero) (num succ zero → succ (num succ zero))
-α > $2 $3 → $3 $2 ($7 $8 → $7 $8) ($12 $13 $14 → $13 ($12 $13 $14))
-β > $3 → $3 ($7 $8 → $7 $8) ($12 $13 $14 → $13 ($12 $13 $14))
-β > $12 $13 $14 → $13 ($12 $13 $14) ($7 $8 → $7 $8)
-β > $13 $14 → $13 (($7 $8 → $7 $8) $13 $14)
-β > $13 $14 → $13 (($8 → $13 $8) $14)
-β > $13 $14 → $13 ($13 $14)
-Natural number detected: 2
+$ stack exec abstract examples/008-factorial.scm
+λ > (identity → (const → (nil → (Y → (true → (false → (nil? → (and → (if → (0 → (inc → (+ → (* → (dec → (- → (0? → (leq? → (nat/eq? → (1 → (2 → (fac → fac ((+ 1) 2)) (Y (fac num → ((if ((nat/eq? num) 0)) 1) (* num) fac ((- num) 1)))) ((+ 1) 1)) (inc 0)) (num1 num2 → (and ((leq? num1) num2)) (leq? num2) num1)) (num1 num2 → 0? ((- num1) num2))) nil?) (num1 num2 → (num2 dec) num1)) (num succ zero → ((num (g h → h (g succ))) const zero) identity)) (num1 num2 succ zero → (num1 (num2 succ)) zero)) (num1 num2 succ zero → (num1 succ) (num2 succ) zero)) (num succ zero → succ ((num succ) zero))) nil) (pred true-clause false-clause → (pred true-clause) false-clause)) (pred1 pred2 → (pred1 pred2) pred1)) (term → (term (const false)) true)) nil) const) (g → (f → f f) (x → g (x x)))) (_always never → never)) (always _never → always)) (same → same)
+λ > (succ zero → succ (succ (succ (succ (succ (succ zero))))))
+Term detected: #6
 ```
 
 Run `ghci`
 
 ```
 $ stack ghci --main-is abstract:exe:scheme
-> run_file "samples/scheme1.scm"
+> run_file "examples/008-factorial.scm"
 ```

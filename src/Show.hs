@@ -15,6 +15,11 @@ show_term term =
         Abs _ _ -> True
         _ -> False
 
+    is_app term =
+      case term of
+        App _ _ -> True
+        _ -> False
+
     show_abs term =
       case term of
         Abs id body ->
@@ -27,13 +32,19 @@ show_term term =
         id
 
       abs@(Abs _ _) ->
-        show_abs abs
+        "(" ++ show_abs abs ++ ")"
 
       App left right ->
         case () of
-          _ | not (is_var right) ->
-            show_term left ++ " (" ++ show_term right ++ ")"
-          _ | is_abs left ->
+          _ | is_app left ->
             "(" ++ show_term left ++ ") " ++ show_term right
+          _ | is_app right ->
+            show_term left ++ " (" ++ show_term right ++ ")"
+          -- _ | is_var right ->
+          --
+          -- _ | is_app right ->
+          --   show_term left ++ " (" ++ show_term right ++ ")"
+          -- _ | is_abs left ->
+          --   "(" ++ show_term left ++ ") " ++ show_term right
           _ ->
             show_term left ++ " " ++ show_term right
