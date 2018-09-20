@@ -1,4 +1,6 @@
-(let* ((identity
+(let* (;; copy of our small library
+
+       (identity
         (lambda (same)
           same))
 
@@ -10,7 +12,31 @@
         (lambda (_always never)
           never))
 
-       (make-pair
+       (true const)
+
+       (false nil)
+
+       (and
+        (lambda (pred1 pred2)
+          (pred1 pred2 pred1)))
+
+       (or
+        (lambda (pred1 pred2)
+          (pred1 pred1 pred2)))
+
+       (if
+        (lambda (pred? then-clause else-clause)
+          (pred? then-clause else-clause)))
+
+       (not
+        (lambda (pred?)
+          (if pred? false true)))
+
+       (nil?
+        (lambda (term)
+          (term (const false) true)))
+
+       (pair/make
         (lambda (first second pair)
           (pair first second)))
 
@@ -22,9 +48,9 @@
         (lambda (pair)
           (pair nil)))
 
-       (0
-        (lambda (succ zero)
-          zero))
+       ;; end of the library
+
+       (0 nil)
 
        (inc
         (lambda (num succ zero)
@@ -47,12 +73,13 @@
           (num (lambda (g h) (h (g succ)))
                (const zero)
                identity)))
+
        (another-dec
         (lambda (num)
           (let ((paired-inc
                  (lambda (num)
-                   (make-pair (second num) (inc (second num))))))
-            (first (num paired-inc (make-pair 0 0))))))
+                   (pair/make (second num) (inc (second num))))))
+            (first (num paired-inc (pair/make 0 0))))))
 
        (1 (inc 0))
 

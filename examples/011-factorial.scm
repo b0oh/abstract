@@ -1,4 +1,6 @@
-(let* ((identity
+(let* (;; copy of our small library
+
+       (identity
         (lambda (same)
           same))
 
@@ -10,26 +12,48 @@
         (lambda (_always never)
           never))
 
-       (Y
-        (lambda (g)
-          (let ((f (lambda (x) (g (x x)))))
-            (f f))))
-
        (true const)
 
        (false nil)
-
-       (nil?
-        (lambda (term)
-          (term (const false) true)))
 
        (and
         (lambda (pred1 pred2)
           (pred1 pred2 pred1)))
 
+       (or
+        (lambda (pred1 pred2)
+          (pred1 pred1 pred2)))
+
        (if
-        (lambda (pred true-clause false-clause)
-          (pred true-clause false-clause)))
+        (lambda (pred? then-clause else-clause)
+          (pred? then-clause else-clause)))
+
+       (not
+        (lambda (pred?)
+          (if pred? false true)))
+
+       (nil?
+        (lambda (term)
+          (term (const false) true)))
+
+       (pair/make
+        (lambda (first second pair)
+          (pair first second)))
+
+       (first
+        (lambda (pair)
+          (pair const)))
+
+       (second
+        (lambda (pair)
+          (pair nil)))
+
+       ;; end of the library
+
+       (Y
+        (lambda (self)
+          (let ((f (lambda (x) (self (x x)))))
+            (f f))))
 
        (0 nil)
 
@@ -57,24 +81,22 @@
 
        (0? nil?)
 
-       (leq?
+       (nat/leq?
         (lambda (num1 num2)
           (0? (- num1 num2))))
 
        (nat/eq?
         (lambda (num1 num2)
-          (and (leq? num1 num2) (leq? num2 num1))))
+          (and (nat/leq? num1 num2) (nat/leq? num2 num1))))
 
        (1 (inc 0))
 
-       (2 (+ 1 1))
-
-       (4 (* 2 2))
+       (2 (inc 1))
 
        (fac
         (Y (lambda (fac num)
-             (if (nat/eq? num 0)
+             (if (nat/eq? num 0) ;; could be also just (0? num)
                  1
                  (* num (fac (- num 1))))))))
 
-  (fac (+ 1 4)))
+  (fac (inc 2)))
