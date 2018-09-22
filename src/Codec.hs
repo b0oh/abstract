@@ -1,13 +1,14 @@
 module Codec where
 
 import Data.List (intercalate)
+import Data.Char (chr, isPrint)
 
 import Optional
 import Term
 import Show
 
 
-data Decoded = Nil | Nat Int | Pair Decoded Decoded | List [Decoded] | Term Term
+data Decoded = Nil | Nat Int | Pair Decoded Decoded | List [Decoded] | Charlist String | Term Term
 
 
 show_decoded :: Decoded -> String
@@ -18,6 +19,9 @@ show_decoded decoded =
 
     Pair first second ->
       "(" ++ show_decoded first ++ ", " ++ show_decoded second ++ ")"
+
+    Charlist string ->
+      "\"" ++ string ++ "\""
 
     List list ->
       "[" ++ intercalate ", " (map show_decoded list) ++ "]"
@@ -51,17 +55,22 @@ decode term =
           Some pair
 
         None ->
-          case decode_list term of
-            Some list ->
-              Some list
+          case decode_charlist term of
+            Some charlist ->
+              Some charlist
 
             None ->
-              case decode_nat term of
-                Some nat ->
-                  Some nat
+              case decode_list term of
+                Some list ->
+                  Some list
 
                 None ->
-                  None
+                  case decode_nat term of
+                    Some nat ->
+                      Some nat
+
+                    None ->
+                      None
 
 
 decode_nil :: Term -> Optional Decoded
@@ -100,6 +109,41 @@ decode_list term =
 
              App (App (Var trans1) elem) rest | trans0 == trans1 ->
                iter (some (decode elem) (Term elem) : acc) rest
+
+             _ ->
+               None
+
+       in
+         iter [] elems
+
+    _ ->
+      None
+
+
+decode_charlist :: Term -> Optional Decoded
+decode_charlist term =
+  case term of
+    Abs trans0 (Abs init0 elems) ->
+       let
+         iter acc term =
+           case term of
+             Var init1 | init0 == init1 ->
+               Some (Charlist (reverse acc))
+
+             App (App (Var trans1) elem) rest | trans0 == trans1 ->
+               case decode elem of
+                 Some (Nat num) ->
+                   let
+                     char = chr num
+
+                   in
+                     if isPrint char then
+                       iter (char : acc) rest
+                     else
+                       None
+
+                 None ->
+                   None
 
              _ ->
                None
