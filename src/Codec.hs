@@ -1,7 +1,7 @@
 module Codec where
 
 import Data.List (intercalate)
-import Data.Char (chr, isPrint)
+import qualified Data.Char as Char
 
 import Optional
 import Term
@@ -134,10 +134,10 @@ decode_charlist term =
                case decode elem of
                  Some (Nat num) ->
                    let
-                     char = chr num
+                     char = Char.chr num
 
                    in
-                     if isPrint char then
+                     if Char.isPrint char then
                        iter (char : acc) rest
                      else
                        None
@@ -168,3 +168,15 @@ decode_nat value =
           None
     _ ->
       None
+
+
+encode_nat :: Int -> Term
+encode_nat n =
+  case n of
+    0 ->
+      Abs "succ" (Abs "zero" (Var "zero"))
+    _ ->
+      let
+        Abs "succ" (Abs "zero" body) = encode_nat (n - 1)
+      in
+        Abs "succ" (Abs "zero" (App (Var "succ") body))

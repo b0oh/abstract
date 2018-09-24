@@ -4,20 +4,19 @@ import Prelude hiding (read)
 import qualified Data.Char as Char
 
 
-operator_chars = "+*^/"
+special_chars = "+*^/#,\\-_?!"
 
 
-is_operator = (`elem` operator_chars)
+is_special = (`elem` special_chars)
 
 
 is_white char = char `elem` " \n\t"
 
 
-is_symbol char =
-  char `elem` "_-'?"
+is_symbol_init char =
+  is_special char
   || Char.isDigit char
   || Char.isLetter char
-  || is_operator char
 
 
 is_symbol_delimiter char =
@@ -48,7 +47,7 @@ read input@(char : rest)
     read_list rest []
   | char == ';' =
     skip_comment_line rest
-  | is_symbol char =
+  | is_symbol_init char =
     read_symbol rest [char]
 
 
@@ -67,7 +66,7 @@ read_symbol input acc =
       (Symbol (reverse acc), input)
     char : _ | is_symbol_delimiter char ->
       (Symbol (reverse acc), input)
-    char : rest | is_symbol char ->
+    char : rest ->
       read_symbol rest (char : acc)
 
 

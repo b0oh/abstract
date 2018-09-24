@@ -100,20 +100,20 @@
           (trans head (tail trans init))))
 
        (head
-        (lambda (list)
-          (list (lambda (head _tail) head) false)))
+        (lambda (elemes)
+          (elems (lambda (head _tail) head) false)))
 
        (head
-        (lambda (list)
-          (list const false)))
+        (lambda (elems)
+          (elems const false)))
 
        (tail
-        (lambda (list cons init)
+        (lambda (elems cons init)
           (let ((helper
                  (lambda (head tail pred)
                    (pred head (tail cons)))))
 
-            (list helper (const init) nil))))
+            (elems helper (const init) nil))))
 
        (1 (inc 0))
 
@@ -123,10 +123,14 @@
 
        (4 (inc 3))
 
+       (terms (cons/make a (cons/make b (cons/make c (cons/make d nil)))))
+
+       (qwe (lambda (trans init) ((trans q) ((trans w) init))))
+
        (nums (cons/make 1 (cons/make 2 (cons/make 3 (cons/make 4 nil)))))
 
-       (fold-right (lambda (trans init list) (list trans init)))
+       (fold-right (lambda (trans init elems) (elems trans init)))
 
        (product (fold-right * 1)))
 
-  (pair/make nums (product nums)))
+  qwe)

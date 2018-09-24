@@ -3,13 +3,16 @@ module Syntax.Scheme where
 import Prelude hiding (read, succ)
 import qualified Prelude (read)
 import Debug.Trace
+import qualified Data.Char as Char
 
+
+import Optional
 import Term
 import Syntax.Sexp
+import Codec (encode_nat)
 
 
 extract :: Sexp -> Term
--- extract sexp | trace ("extract " ++ show sexp) False = undefined
 extract sexp =
   let
     app_iter terms acc =
@@ -60,7 +63,12 @@ extract sexp =
   in
     case sexp of
       Symbol id ->
-        Var id
+        case extract_nat id of
+          Some nat ->
+            encode_nat nat
+
+          None ->
+            Var id
 
       List [(Symbol "lambda"), List args, body] ->
         make_lambda (reverse args) body
@@ -78,5 +86,37 @@ extract sexp =
         in
           extract new_sexp
 
+      List ((Symbol "list") : elems) ->
+        let
+          body :: Sexp
+          body = foldr (\elem acc-> List [Symbol "trans", elem, acc]) (Symbol "init") elems
+        in
+          make_lambda [Symbol "init", Symbol "trans"] body
+
       List (abs : term : rest) ->
         app_iter rest (App (extract abs) (extract term))
+
+
+extract_nat :: Id -> Optional Int
+extract_nat id =
+  case id of
+    ['#', '\\', char] | Char.isPrint char  ->
+      Some (Char.ord char)
+
+    "#\\space" ->
+      Some (Char.ord ' ')
+
+    '#' : rest ->
+      optional_read rest
+
+    _ ->
+      None
+
+
+optional_read :: (Read a) => String -> Optional a
+optional_read string =
+  case reads string of
+    [(value, "")] ->
+      Some value
+    _ ->
+      None
