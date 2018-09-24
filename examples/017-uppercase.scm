@@ -17,6 +17,10 @@
           (let ((f (lambda (x) (self (x x)))))
             (f f))))
 
+       (comp
+        (lambda (fun1 fun2 arg)
+          (fun1 (fun2 arg))))
+
        ;; logic
 
        (true const)
@@ -73,6 +77,10 @@
         (lambda (num1 num2 succ zero)
           (num1 (num2 succ) zero)))
 
+       (^
+        (lambda (num1 num2)
+          (num2 num1)))
+
        (dec
         (lambda (num succ zero)
           (num (lambda (g h) (h (g succ)))
@@ -93,40 +101,48 @@
         (lambda (num1 num2)
           (and (nat/leq? num1 num2) (nat/leq? num2 num1))))
 
-       ;; end of the library
+       ;; lists
 
        (cons
         (lambda (head tail trans init)
           (trans head (tail trans init))))
 
        (head
-        (lambda (elemes)
-          (elems (lambda (head _tail) head) false)))
-
-       (head
         (lambda (elems)
-          (elems const false)))
+          (elems const nil)))
 
        (tail
         (lambda (elems cons init)
           (let ((helper
-                 (lambda (head tail pred)
-                   (pred head (tail cons)))))
+                 (lambda (head tail trans)
+                   (trans head (tail cons)))))
 
             (elems helper (const init) nil))))
 
-       (1 (inc 0))
+       (fold-right
+        (lambda (trans init elems)
+          (elems trans init)))
 
-       (2 (inc 1))
+       (map
+        (lambda (fun)
+          (fold-right (comp cons fun) nil)))
 
-       (3 (inc 2))
+       ;; end of the library
 
-       (4 (inc 3))
+       (char/lowercase?
+        (lambda (char)
+          (and
+           (not (nat/leq? char (dec #\a)))
+           (nat/leq? char #\z))))
 
-       (nums (cons 1 (cons 2 (cons 3 (cons 4 nil)))))
+       (char/uppercase
+        (lambda (char)
+          (if (char/lowercase? char)
+              (- char #\space)
+              char)))
 
-       (fold-right (lambda (trans init elems) (elems trans init)))
+       (string/uppercase (map char/uppercase))
 
-       (product (fold-right * 1)))
+       (hello (list #\H #\e #\l #\l #\o)))
 
-  (pair/make nums (product nums)))
+  (string/uppercase hello))

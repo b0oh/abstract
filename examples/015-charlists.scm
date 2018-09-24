@@ -99,25 +99,21 @@
 
        ;; lists
 
-       (cons/make
+       (cons
         (lambda (head tail trans init)
           (trans head (tail trans init))))
 
        (head
-        (lambda (list)
-          (list (lambda (head _tail) head) nil)))
-
-       (head
-        (lambda (list)
-          (list const nil)))
+        (lambda (elems)
+          (elems const nil)))
 
        (tail
-        (lambda (list cons init)
+        (lambda (elems cons init)
           (let ((helper
                  (lambda (head tail trans)
                    (trans head (tail cons)))))
 
-            (list helper (const init) nil))))
+            (elems helper (const init) nil))))
 
        ;; end of the library
 
@@ -155,6 +151,6 @@
 
        (o 111)
 
-       (hello (cons/make H (cons/make e (cons/make l (cons/make l (cons/make o nil)))))))
+       (hello (cons H (cons e (cons l (cons l (cons o nil)))))))
 
   hello)
