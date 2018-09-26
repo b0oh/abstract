@@ -15,12 +15,14 @@ library
   exposed-modules:     Codec, Optional, Show, Syntax.Scheme, Syntax.Sexp, Term
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
+  ghc-options: -O2 -H4G
 
 executable abstract
   hs-source-dirs:      app
   main-is:             Main.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, abstract
+  ghc-options: -O2 -H4G
 
 test-suite abstract-test
   type: exitcode-stdio-1.0

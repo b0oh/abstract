@@ -15,14 +15,14 @@ run_file file_name = do
   contents <- readFile file_name
   let sexp = read_ contents
   let term = extract sexp
-  putStrLn ("λ > " ++ show_term term)
+--   putStrLn ("λ > " ++ show_term term)
   let normal_form = full_beta term
-  putStrLn ("λ > " ++ show_term normal_form)
+--   putStrLn ("λ > " ++ show_term normal_form)
   case decode normal_form of
     Some result ->
       putStrLn ("Term detected: " ++ show_decoded result)
     None ->
-      return ()
+      putStrLn ("λ > " ++ show_term normal_form)
 
 
 main :: IO ()

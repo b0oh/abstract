@@ -127,6 +127,15 @@
 
        (fold-right (lambda (trans init elems) (elems trans init)))
 
+       (empty?
+        (lambda (l)
+          (l (lambda (h t d) true) false)))
+
+       (empty? (fold-right (lambda (h t) false) true))
+
        (product (fold-right * 1)))
 
-  (pair/make nums (product nums)))
+  (if (empty? nums)
+      WUT?
+      piu))
+;;      )(pair/make nums (product nums)))

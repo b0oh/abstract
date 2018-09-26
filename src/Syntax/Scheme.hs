@@ -106,6 +106,9 @@ extract_nat id =
     "#\\space" ->
       Some (Char.ord ' ')
 
+    "#\\nl" ->
+      Some (Char.ord '\n')
+
     '#' : rest ->
       optional_read rest
 
