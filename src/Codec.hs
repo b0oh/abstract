@@ -137,7 +137,7 @@ decode_charlist term =
                      char = Char.chr num
 
                    in
-                     if Char.isPrint char then
+                     if Char.isPrint char || char == '\n' then
                        iter (char : acc) rest
                      else
                        None

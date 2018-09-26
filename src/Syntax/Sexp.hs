@@ -4,7 +4,7 @@ import Prelude hiding (read)
 import qualified Data.Char as Char
 
 
-special_chars = "+*^/#,\\-_?!"
+special_chars = "+*^/#,\\-_?!|>"
 
 
 is_special = (`elem` special_chars)
@@ -64,6 +64,8 @@ read_symbol input acc =
   case input of
     [] ->
       (Symbol (reverse acc), input)
+    '\\' : escaped : rest ->
+      read_symbol rest (escaped : '\\'  : acc)
     char : _ | is_symbol_delimiter char ->
       (Symbol (reverse acc), input)
     char : rest ->
